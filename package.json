@@ -1,0 +1,39 @@
+{
+  "name": "ecstasy-immutable",
+  "version": "0.1.0",
+  "description": "An immutable Entity-Component-System library for Javascript ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoo2001818/ecstasy-immutable.git"
+  },
+  "author": "Duknam Yoo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yoo2001818/ecstasy-immutable/issues"
+  },
+  "homepage": "https://github.com/yoo2001818/ecstasy-immutable#readme",
+  "keywords": [
+    "ecs",
+    "component",
+    "entity",
+    "system",
+    "framework",
+    "game"
+  ],
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "babel-core": "^5.8.24",
+    "eslint": "^1.4.1",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.2.1",
+    "gulp-eslint": "^1.0.0",
+    "gulp-mocha": "^2.1.3",
+    "gulp-util": "^3.0.6",
+    "mocha": "^2.3.2"
+  },
+  "dependencies": {}
+}
