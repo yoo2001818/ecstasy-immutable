@@ -25,11 +25,12 @@
     "game"
   ],
   "devDependencies": {
-    "babel": "^5.8.23",
-    "babel-core": "^5.8.24",
+    "babel": "^6.0.15",
+    "babel-core": "^6.0.20",
+    "babel-preset-es2015": "^6.0.15",
     "eslint": "^1.4.1",
     "gulp": "^3.9.0",
-    "gulp-babel": "^5.2.1",
+    "gulp-babel": "^6.0.0",
     "gulp-eslint": "^1.0.0",
     "gulp-mocha": "^2.1.3",
     "gulp-util": "^3.0.6",
