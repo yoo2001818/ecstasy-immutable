@@ -1,3 +1,6 @@
+// Since a game requires a lot of memory, copying data on every frame
+// doesn't seem to be a great idea.
+
 import ecstasy from '../src/index.js';
 
 function velocityMiddleware(engine, action, next) {
@@ -14,31 +17,26 @@ function velocityMiddleware(engine, action, next) {
 function velocitySystem(state, action) {
   switch (action.type) {
   case 'add':
-    if (action.vel == null) return state;
-    return Object.assign({}, state, {
-      [action.id]: action.vel
-    });
+    if (action.vel == null) return;
+    state[action.id] = action.vel;
+    return;
   }
-  return state;
+  return;
 }
 
 function positionSystem(state, action) {
   switch (action.type) {
   case 'add':
-    if (action.pos == null) return state;
-    return Object.assign({}, state, {
-      [action.id]: action.pos
-    });
+    if (action.pos == null) return;
+    state[action.id] = action.pos;
+    return;
   case 'pos_add':
     const entity = state[action.entity];
-    return Object.assign({}, state, {
-      [action.entity]: {
-        x: action.x + entity.x,
-        y: action.y + entity.y
-      }
-    });
+    entity.x += action.x;
+    entity.y += action.y;
+    return;
   }
-  return state;
+  return;
 }
 
 let engine = ecstasy([
