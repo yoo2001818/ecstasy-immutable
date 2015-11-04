@@ -1,63 +1,119 @@
-// Since a game requires a lot of memory, copying data on every frame
-// doesn't seem to be a great idea.
+import expect from 'expect';
+import createStore, { createAction } from '../src/index.js';
 
-import ecstasy from '../src/index.js';
+const SPAWN = 'spawn';
+const UPDATE = 'update';
+const INIT = 'init';
 
-function velocityMiddleware(engine, action, next) {
-  if (action.type !== 'update') return next(action);
-  let { vel } = engine.getState();
-  vel.forEach(entity => engine.dispatch({
-    type: 'pos_add',
-    x: entity.x,
-    y: entity.y
+const POS_ADD = 'pos_add';
+
+const init = createAction(INIT);
+const spawn = createAction(SPAWN);
+const update = createAction(UPDATE);
+
+const posAdd = createAction(POS_ADD, (id, x, y) => ({
+  id, x, y
+}));
+
+// This would be a builtin object
+function spawnMiddleware(engine, action, next) {
+  if (action.type !== SPAWN) return next(action);
+  let { id } = engine.getState();
+  return next(Object.assign({}, action, {
+    payload: Object.assign({}, action.payload, {
+      id: id.last
+    })
   }));
+}
+
+function velMiddleware(engine, action, next) {
+  if (action.type !== UPDATE) return next(action);
+  let { vel } = engine.getState();
+  for (let id in vel) {
+    let value = vel[id];
+    engine.dispatch(posAdd(id, value.x, value.y));
+  }
   return next(action);
 }
 
-function velocitySystem(state, action) {
-  switch (action.type) {
-  case 'add':
-    if (action.vel == null) return;
-    state[action.id] = action.vel;
-    return;
+// This would be a builtin object, too.
+function idSystem(state = { last: 0 }, action, root) {
+  const { payload, type } = action;
+  switch (type) {
+  case SPAWN:
+    if (payload && payload.id) {
+      state.last = payload.id + 1;
+    }
+    return state;
   }
-  return;
+  return state;
 }
 
-function positionSystem(state, action) {
-  switch (action.type) {
-  case 'add':
-    if (action.pos == null) return;
-    state[action.id] = action.pos;
-    return;
-  case 'pos_add':
-    const entity = state[action.entity];
-    entity.x += action.x;
-    entity.y += action.y;
-    return;
+// same for this
+function spawnSystem(name, state = {}, action, root) {
+  const { payload, type } = action;
+  switch (type) {
+  case SPAWN:
+    if (payload && payload[name]) {
+      state[payload.id] = payload[name];
+    }
+    return state;
   }
-  return;
+  return state;
 }
 
-let engine = ecstasy([
-  velocityMiddleware
+function posSystem(state = {}, action, root) {
+  spawnSystem('pos', state, action, root);
+  const { payload, type } = action;
+  switch (type) {
+  case POS_ADD:
+    let pos = state[payload.id];
+    pos.x += payload.x;
+    pos.y += payload.y;
+    return state;
+  }
+  return state;
+}
+
+const store = createStore([
+  spawnMiddleware, velMiddleware
 ], {
-  vel: velocitySystem,
-  pos: positionSystem
+  id: idSystem,
+  pos: posSystem,
+  vel: spawnSystem.bind(null, 'vel')
 });
 
-engine.dispatch({
-  type: 'add',
+store.dispatch(init());
+
+expect(store.getState()).toEqual({
+  id: { last: 0 },
+  pos: {},
+  vel: {}
+});
+
+store.dispatch(spawn({
+  pos: { x: 0, y: 0 },
+  vel: { x: 2, y: 2 }
+}));
+
+expect(store.getState()).toEqual({
+  id: { last: 1 },
   pos: {
-    x: 0,
-    y: 0
+    0: { x: 0, y: 0 }
   },
   vel: {
-    x: 3,
-    y: 3
+    0: { x: 2, y: 2 }
   }
 });
 
-engine.dispatch({
-  type: 'update'
+store.dispatch(update());
+
+expect(store.getState()).toEqual({
+  id: { last: 1 },
+  pos: {
+    0: { x: 2, y: 2 }
+  },
+  vel: {
+    0: { x: 2, y: 2 }
+  }
 });
