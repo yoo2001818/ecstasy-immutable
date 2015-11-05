@@ -1,30 +1,16 @@
 import expect from 'expect';
-import createStore, { createAction } from '../src/index.js';
+import createStore, { createAction, builtIn } from '../src/index.js';
 
-const SPAWN = 'spawn';
-const UPDATE = 'update';
-const INIT = 'init';
+const {
+  SPAWN, INIT, UPDATE, init, spawn, update, idSystem, spawnSystem,
+  spawnMiddleware
+} = builtIn;
 
 const POS_ADD = 'pos_add';
-
-const init = createAction(INIT);
-const spawn = createAction(SPAWN);
-const update = createAction(UPDATE);
 
 const posAdd = createAction(POS_ADD, (id, x, y) => ({
   id, x, y
 }));
-
-// This would be a builtin object
-function spawnMiddleware(engine, action, next) {
-  if (action.type !== SPAWN) return next(action);
-  let { id } = engine.getState();
-  return next(Object.assign({}, action, {
-    payload: Object.assign({}, action.payload, {
-      id: id.last
-    })
-  }));
-}
 
 function velMiddleware(engine, action, next) {
   if (action.type !== UPDATE) return next(action);
@@ -34,32 +20,6 @@ function velMiddleware(engine, action, next) {
     engine.dispatch(posAdd(id, value.x, value.y));
   }
   return next(action);
-}
-
-// This would be a builtin object, too.
-function idSystem(state = { last: 0 }, action, root) {
-  const { payload, type } = action;
-  switch (type) {
-  case SPAWN:
-    if (payload && payload.id) {
-      state.last = payload.id + 1;
-    }
-    return state;
-  }
-  return state;
-}
-
-// same for this
-function spawnSystem(name, state = {}, action, root) {
-  const { payload, type } = action;
-  switch (type) {
-  case SPAWN:
-    if (payload && payload[name]) {
-      state[payload.id] = payload[name];
-    }
-    return state;
-  }
-  return state;
 }
 
 function posSystem(state = {}, action, root) {
