@@ -12,6 +12,11 @@ const posAdd = createAction(POS_ADD, (id, x, y) => ({
   id, x, y
 }));
 
+function logMiddleware(engine, action, next) {
+  console.log(action);
+  return next(action);
+}
+
 function velMiddleware(engine, action, next) {
   if (action.type !== UPDATE) return next(action);
   let { vel } = engine.getState();
@@ -36,7 +41,7 @@ function posSystem(state = {}, action, root) {
 }
 
 const store = createStore([
-  spawnMiddleware, velMiddleware
+  logMiddleware, spawnMiddleware, velMiddleware
 ], {
   id: idSystem,
   pos: posSystem,
